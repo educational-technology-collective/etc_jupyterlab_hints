@@ -16,16 +16,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     console.log('JupyterLab extension etc_jupyterlab_hints is activated!');
-    // const isActivated = false;
+
     const labShell = app.shell as LabShell;
-    // if (!isActivated) {
-    // isActivated = true;
-    // console.log("I'm activated!");
+    
+    // on notebook open or change event
     labShell.currentChanged.connect(() => {
       const notebook = app.shell.currentWidget as NotebookPanel;
       if (notebook) {
         notebook.revealed.then(() => {
-          console.log('Notebook is revealed!');
+
+          // once the notebook is revealed, find the hint cell
           findHintCell(notebook);
         });
       }
@@ -36,14 +36,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
 const findHintCell = (notebook: NotebookPanel): void => {
   if (notebook.content.model) {
     const cellList = notebook.content.model.cells;
+
+    // loop through all cells
     for (let i = 0; i < cellList.length; i++) {
       if (cellList.get(i).metadata.hint) {
-        // cellList.get(i).setMetadata('revealed', false);
+        // if the cell is a hint cell, find the corresponding cell element
         const cellElement = notebook.content.widgets.find(widget => {
           return widget.model === cellList.get(i);
         });
-        console.log('CELL ELEMENT : ', cellElement);
+        // console.log('CELL ELEMENT : ', cellElement);
         if (cellElement) {
+          // if the cell element is found, add the hint overlay
           hintOverlay(cellList.get(i), cellElement.node, cellElement?.model.id);
         }
       }
