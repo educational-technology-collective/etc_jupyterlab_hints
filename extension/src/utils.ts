@@ -1,4 +1,13 @@
-export const hintOverlay = (cell: any, node: HTMLElement, id: string) => {
+import { IJupyterLabPioneer } from 'jupyterlab-pioneer';
+import { NotebookPanel } from '@jupyterlab/notebook';
+
+export const hintOverlay = (
+  cell: any,
+  node: HTMLElement,
+  id: string,
+  notebook: NotebookPanel,
+  pioneer: IJupyterLabPioneer
+) => {
   const overlay = document.createElement('div'); // Overlay div to blur out the hint cell
   const modal = document.createElement('div'); // Modal to confirm if user wants to reveal hint
 
@@ -60,8 +69,16 @@ export const hintOverlay = (cell: any, node: HTMLElement, id: string) => {
     document.body.dispatchEvent(
       new KeyboardEvent('keydown', { key: 's', keyCode: 83, ctrlKey: true })
     );
-  });
 
+    const event = {
+      eventName: 'HintRevealedEvent',
+      eventTime: Date.now()
+    };
+    const exporters = notebook.content.model?.getMetadata('exporters');
+    exporters?.forEach(async (exporter: any) => {
+      await pioneer.publishEvent(notebook, event, exporter, false);
+    });
+  });
   // overlay.style.backgroundColor = '#222';
   console.log('OVERLAY: ', overlay);
   console.log('NODE IN AFTER OVERLAY: ', node);
